@@ -1,0 +1,107 @@
+  function calcularTiemposEnProyecto (proyectoId: number, colaboradorId?: number): { tiempoTotalProyecto: number, tiempoColaborador: number } {
+    let tiempoTotalProyecto = 0
+    let tiempoColaborador = 0
+    colaboradores.forEach((colaborador: any) => {
+      if (colaborador?.horario_laboral) {
+        JSON.parse(colaborador.horario_laboral).forEach((horario: any) => {
+          if (horario.detalle) {
+            Object.values(horario.detalle).forEach((arrayDetalle: any) => {
+              arrayDetalle.forEach((detalleItem: any) => {
+                if (detalleItem.proyecto && detalleItem.proyecto.id == proyectoId) {
+                  const horaInicio = new Date(`2024-03-18 ${detalleItem.horaInicio}`)
+                  const horaFin = new Date(`2024-03-18 ${detalleItem.horaFin}`)
+                  if (!isNaN(horaInicio.getTime()) && !isNaN(horaFin.getTime())) {
+                    let diffMs = horaFin.getTime() - horaInicio.getTime()
+                    // Ajustar el tiempo si los minutos terminan en _:59
+                    if (detalleItem.horaFin.endsWith(':59')) {
+                      diffMs += 60000 // Sumar un minuto en milisegundos
+                    }
+                    const tiempoEnMinutos = diffMs / (1000 * 60)
+                    tiempoTotalProyecto += tiempoEnMinutos
+                    // Si se especifica un colaborador, acumular su tiempo
+                    if (colaboradorId && colaborador.id == colaboradorId) {
+                      tiempoColaborador += tiempoEnMinutos
+                    }
+                  }
+                }
+              })
+            })
+          }
+        })
+      }
+    })
+    return { tiempoTotalProyecto, tiempoColaborador }
+  }
+
+  const filterDateConPrecio = (
+    idUser?: any,
+    tipoList?: any
+  ): Record<string, number> => {
+    let filteredProductos: any = ventas
+    const proyectosPorMes: Record<string, number> = {}
+    monthNames.forEach((month) => {
+      proyectosPorMes[month] = 0
+    })
+    // const col: any = colaboradores.find((user: any) => user.id == idUser)
+    filteredProductos = filteredProductos.filter((pro: any) => {
+      // Verifica la existencia de fecha_inicio y asignacion
+      if (!pro.fecha_inicio || !pro.asignacion) return false
+      // Verifica asignaciones de usuario
+      const asignacion = JSON.parse(pro.asignacion)
+      const userAssigned = idUser
+        ? asignacion.some((user: any) => user.peso == idUser)
+        : asignacion.some((user: any) =>
+          colaboradores.some((col: any) => col.id == user.peso)
+        )
+
+      if (!userAssigned) return false
+
+      // Verifica fechas
+      const fechaInicio = pro.fecha_inicio
+      const date = parse(fechaInicio, 'dd/MM/yyyy', new Date())
+      const year = date.getFullYear()
+      const month = date.getMonth()
+      const yearMatches = year == getYear(selectedDate)
+      const monthMatches = selectedMonth === null || month == Number(selectedMonth)
+
+      if (!(yearMatches && monthMatches)) return false
+
+      // Filtra según filtroTipo
+      if (filtroTipo === 'clientes' && pro.id_cliente == 2298) return false
+      if (filtroTipo === 'agencia' && pro.id_cliente != 2298) return false
+
+      // Filtra según tipoList
+      if (tipoList === 'abandono' && pro.estado != '1') return false
+      if (
+        tipoList === 'proceso' &&
+          ((pro.fecha_fin != null && pro.fecha_fin != '') ||
+            !pro.fecha_inicio || pro.estado == '1' || pro.community_activo == 'false')
+      ) return false
+      if (
+        tipoList === 'finalizado' &&
+          (pro.fecha_fin == null || pro.fecha_fin == '' || pro.estado == '1')
+      ) return false
+      if (tipoList === 'deshabilitado' && (pro.community_activo != 'false' || pro.fecha_fin != null)) return false
+      if (tipoList !== undefined && pro.estado == '1') return false
+
+      // Si pasa todas las condiciones, mantén el elemento
+      return true
+    })
+    filteredProductos.forEach((pro: any) => {
+      const fechaParts = pro.fecha_inicio.split('/')
+      if (fechaParts.length === 3) {
+        const mes = parseInt(fechaParts[1], 10)
+        if (!isNaN(mes) && mes >= 1 && mes <= 12) {
+          const nombreMes = monthNames[mes - 1]
+          const precio = parseFloat(pro?.contrato?.precio) || 0
+
+          const { tiempoTotalProyecto, tiempoColaborador } = calcularTiemposEnProyecto(pro.id, idUser)
+          const porcentajeParticipacion = tiempoTotalProyecto > 0 ? (tiempoColaborador / tiempoTotalProyecto) : 0
+          const precioAjustado = (precio * porcentajeParticipacion)
+          //   console.log(tiempoInvertido)
+          proyectosPorMes[nombreMes] += (precioAjustado)
+        }
+      }
+    })
+    return proyectosPorMes
+  }

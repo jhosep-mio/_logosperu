@@ -1,0 +1,18 @@
+DESARROLLO
+
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:format": "eslint --fix ."
+  },
+
+
+PRODUCCION
+
+"scripts": {
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js"
+  },

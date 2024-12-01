@@ -1,0 +1,69 @@
+{
+  "workbench.colorTheme": "One Dark Pro",
+  "workbench.iconTheme": "material-icon-theme",
+  "explorer.confirmDelete": false,
+  "editor.minimap.enabled": false,
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.detectIndentation": false,
+  "terminal.integrated.defaultProfile.windows": "Git Bash",
+  "workbench.sideBar.location": "right",
+  "editor.scrollbar.vertical": "auto",
+  "editor.overviewRulerBorder": false,
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.guides.indentation": false,
+  "indenticator.width": 0.1,
+  "indenticator.color.dark": "rgba(255,255,255,0.1)",
+  "editor.matchBrackets": "never",
+  "editor.glyphMargin": false,
+  "workbench.statusBar.visible": false,
+  "editor.inlineSuggest.suppressSuggestions": true,
+  "editor.inlineSuggest.showToolbar": "always",
+  "editor.screenReaderAnnounceInlineSuggestion": true,
+  "editor.suggest.preview": true,
+  "editor.suggest.shareSuggestSelections": true,
+  "editor.suggestOnTriggerCharacters": false,
+  "editor.quickSuggestions": {
+    "comments": "on",
+    "strings": "on"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "window.zoomLevel": 1,
+  "git.confirmSync": false,
+  "terminal.integrated.env.windows": {},
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "remote.portsAttributes": {
+    "3000": {
+      "protocol": "http"
+    }
+  }
+}

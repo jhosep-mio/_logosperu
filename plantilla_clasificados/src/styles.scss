@@ -1,0 +1,275 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+html {
+  scroll-behavior: smooth;
+  font-family: "Lexend Deca", sans-serif;
+}
+
+.styles-module_chatHeader__gaeOA .styles-module_avatar__afcc4 img {
+    background-color: white !important;
+    padding: 5px !important;
+}
+
+.dot-spinner2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  --uib-size: 6rem;
+  --uib-speed: 0.9s;
+  --uib-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: var(--uib-size);
+  width: var(--uib-size);
+}
+
+.dot-spinner__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+}
+
+.dot-spinner__dot::before {
+  content: "";
+  height: 20%;
+  width: 20%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
+  transform: scale(0);
+  opacity: 0.5;
+  animation: pulse0112 calc(var(--uib-speed) * 1.111) ease-in-out infinite;
+  box-shadow: 0 0 20px #916fae;
+}
+
+.dot-spinner__dot:nth-child(2) {
+  transform: rotate(45deg);
+}
+
+.dot-spinner__dot:nth-child(2)::before {
+  animation-delay: calc(var(--uib-speed) * -0.875);
+}
+
+.dot-spinner__dot:nth-child(3) {
+  transform: rotate(90deg);
+}
+
+.dot-spinner__dot:nth-child(3)::before {
+  animation-delay: calc(var(--uib-speed) * -0.75);
+}
+
+.dot-spinner__dot:nth-child(4) {
+  transform: rotate(135deg);
+}
+
+.dot-spinner__dot:nth-child(4)::before {
+  animation-delay: calc(var(--uib-speed) * -0.625);
+}
+
+.dot-spinner__dot:nth-child(5) {
+  transform: rotate(180deg);
+}
+
+.dot-spinner__dot:nth-child(5)::before {
+  animation-delay: calc(var(--uib-speed) * -0.5);
+}
+
+.dot-spinner__dot:nth-child(6) {
+  transform: rotate(225deg);
+}
+
+.dot-spinner__dot:nth-child(6)::before {
+  animation-delay: calc(var(--uib-speed) * -0.375);
+}
+
+.dot-spinner__dot:nth-child(7) {
+  transform: rotate(270deg);
+}
+
+.dot-spinner__dot:nth-child(7)::before {
+  animation-delay: calc(var(--uib-speed) * -0.25);
+}
+
+.dot-spinner__dot:nth-child(8) {
+  transform: rotate(315deg);
+}
+
+.dot-spinner__dot:nth-child(8)::before {
+  animation-delay: calc(var(--uib-speed) * -0.125);
+}
+
+.controlar_alto {
+  height: calc(100vh - 232px);
+}
+
+@keyframes pulse0112 {
+    0%,
+    100% {
+      transform: scale(0);
+      opacity: 0.5;
+    }
+  
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+.swiper-button-prev {
+  background: rgba(142, 137, 137, 0.475);
+  border-radius: 10px;
+  transition: all 500ms;
+  left: 0 !important;
+  &:hover {
+    background: rgba(142, 137, 137, 0.653);
+  }
+  &::after {
+    font-size: 24px;
+    color: black;
+  }
+}
+
+.quitar_ss {
+  z-index: 500 !important;
+}
+
+.swiper-button-next {
+  background: rgba(142, 137, 137, 0.475);
+  border-radius: 10px;
+  transition: all 500ms;
+  right: 0 !important;
+  &:hover {
+    background: rgba(142, 137, 137, 0.653);
+  }
+  &::after {
+    font-size: 24px;
+    color: black;
+  }
+}
+
+.loading-success {
+  // width: 100vw;
+  height: 100vh;
+  position: absolute;
+  z-index: 999999999;
+  inset: 0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: fixed;
+  &-content {
+    position: relative;
+    border-radius: 50%;
+    img {
+      width: 20rem;
+      height: 20rem;
+      margin: auto;
+      object-fit: contain;
+      animation: zoom 1.4s linear infinite alternate;
+
+      @keyframes zoom {
+        from {
+        }
+      }
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      background: #000;
+      mix-blend-mode: color;
+      animation: color 2.8s linear infinite alternate;
+
+      @keyframes color {
+        0% {
+          height: 100%;
+        }
+        50% {
+          height: 0;
+        }
+        100% {
+          top: inherit;
+          bottom: 0;
+        }
+      }
+
+      @keyframes ondas {
+        0% {
+          box-shadow: 0 0 0 0 #29a71a, 0 0 0 0 #29a71a;
+        }
+
+        100% {
+          box-shadow: 0 0 0 0 rgb(255, 110, 0, 0),
+            0 0 0 10rem rgb(255, 110, 0, 0);
+        }
+      }
+    }
+
+    &-giro {
+      position: absolute;
+      inset: 0;
+      -webkit-animation: load3 1.4s infinite linear;
+      animation: load3 1.4s infinite linear;
+
+      &:before {
+        width: 3rem;
+        height: 3rem;
+        background: #006137;
+        border-radius: 65% 0;
+        position: absolute;
+        top: -4rem;
+        left: 0;
+        content: "";
+      }
+
+      &:after {
+        // background-image: url('./../assets/images/logos/icon_paloma.png');
+        width: 75%;
+        height: 75%;
+        border-radius: 50%;
+        content: "";
+        margin: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+      }
+
+      @-webkit-keyframes load3 {
+        0% {
+          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(360deg);
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes load3 {
+        0% {
+          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(360deg);
+          transform: rotate(360deg);
+        }
+      }
+    }
+  }
+}
