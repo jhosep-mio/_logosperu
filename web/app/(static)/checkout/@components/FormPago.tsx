@@ -16,8 +16,8 @@ import useAuth from '@/public/components/shared/hooks/useAuth'
 import { LoginPago } from '@/public/components/web/structure/headerComponents/LoginPago'
 import { ResetPassword } from '@/public/components/web/structure/headerComponents/ResetPassword'
 import { Register } from '@/public/components/web/structure/headerComponents/Register'
-import { Toaster } from 'sonner'
-
+import { toast, Toaster } from 'sonner'
+import { v4 as uuidv4 } from 'uuid'
 export const FormPago = () => {
   const [menuMovil, setMenuMovil] = useState(false)
   const [openAdicional, setOpenAdicional] = useState(false)
@@ -87,29 +87,57 @@ export const FormPago = () => {
     formData.append('pais', values.pais)
     formData.append('nombres', values.nombres)
     formData.append('apellidos', values.apellidos)
+    formData.append('ruc', values.ruc)
+    formData.append('dni', values.dni)
+    formData.append('conFactura', values.conFactura)
     formData.append('razonSocial', values.razonSocial)
+    formData.append('comentarios', values.comentarios)
     formData.append('userid', auth.id)
     formData.append('mensaje', values.mensaje)
     formData.append('igv', (Number(igv) ?? 0).toFixed(2))
     formData.append('domain', 'https://logosperu.com.pe')
 
-    const validatedCart = cart.map((cartItem: any) => {
-      // Buscar el item en la base de datos para obtener los datos válidos
-      const item: any = Object.values(data).find((i: any) => i.correlativo == cartItem.correlativo)
-      if (item) {
-        return {
-          correlativo: item.correlativo,
-          nombre: item.name, // Enviar el nombre correcto
-          servicio: item.servicio, // Enviar el servicio correcto
-          precio: item.price, // Enviar el precio correcto
-          cantidad: cartItem.cantidad // Mantener la cantidad desde el carrito
+    const validatedCart = cart
+      .map((cartItem: any) => {
+        const precioLimpio = cartItem.precio.replace(/[^\d.]/g, '')
+        const item: any = Object.values(data).find((i: any) => i.correlativo == cartItem.correlativo)
+        if (item) {
+          return {
+            id: uuidv4(),
+            correlativo: item.correlativo,
+            imagen: '',
+            nombre: item.name,
+            servicio: item.servicio,
+            precio: precioLimpio,
+            cantidad: cartItem.cantidad
+          }
         }
-      }
-      return null // Si no se encuentra el item, lo ignoramos
-    }).filter(Boolean) // Eliminar cualquier item que sea `null` (si no se encontró)
+        return null // Si no se encuentra el item, lo ignoramos
+      })
+      .filter(Boolean) // Eliminar cualquier item que sea `null` (si no se encontró)
 
-    const combinedData = [...validatedCart, ...adicionales]
+    const validatedAdicionales = adicionales
+      .map((item: any) => {
+        const validatedItem = adicionalesList.find((adicional: any) => adicional.name == item.nombre)
+        if (validatedItem) {
+          return {
+            id: uuidv4(),
+            imagen: '',
+            elemento: validatedItem.name, // Usar el nombre correcto
+            nombre: validatedItem.name, // Usar el nombre correcto
+            precio: validatedItem.precio, // Usar el precio correcto
+            cantidad: item.cantidad, // Mantener la cantidad ingresada por el usuario
+            cantidad_propuestas: item.cantidad_propuestas, // Mantener las propuestas ingresadas por el usuario
+            precio_propuestas: validatedItem.precio_propuestas ?? 0 // Usar el precio_propuestas correcto, si existe
+          }
+        }
+        return null // Si no se encuentra el adicional, lo ignoramos
+      })
+      .filter(Boolean) // Eliminar los adicionales que sean `null`
+
+    const combinedData = [...validatedCart, ...validatedAdicionales]
     formData.append('cart', combinedData ? JSON.stringify(combinedData) : '[]')
+    formData.append('adicionales', validatedAdicionales ? JSON.stringify(validatedAdicionales) : '[]')
 
     try {
       const { data } = await axios.post(`${Global.url}/checkout/createOrdenDes`, formData, {
@@ -119,7 +147,6 @@ export const FormPago = () => {
       })
       await loadMercadoPago()
       const mercadopago = new window.MercadoPago('APP_USR-b50dd1e9-4ff1-4dad-952e-dd806a1ac161', { locale: 'es-PE' })
-
       if (mercadopago) {
         mercadopago.checkout({
           preference: {
@@ -131,6 +158,7 @@ export const FormPago = () => {
       }
     } catch (error) {
       console.log(error)
+      toast.error('Ocurrió un error al procesar tu solicitud. Por favor, intenta nuevamente.')
       setLoading(false)
     }
   }
@@ -146,7 +174,8 @@ export const FormPago = () => {
       pais: 'Perú',
       conFactura: 'Sin factura',
       razonSocial: '',
-      ruc: ''
+      ruc: '',
+      dni: ''
     },
     validationSchema: SchemaPago,
     onSubmit: enviarCorreo
@@ -198,7 +227,7 @@ export const FormPago = () => {
     plan69: {
       name: 'Plan Emprendedor',
       servicio: 'Diseño de logotipo',
-      price: 'S/ 89.00',
+      price: 'S/ 2.00',
       correlativo: 'LP69',
       items: [
         '(01) Propuestas de logo - Hasta 3 cambios.',
@@ -964,7 +993,7 @@ export const FormPago = () => {
                                   <h3 className="font-base text-base uppercase">{item.name}</h3>
                                   <h3 className="font-base text-sm text-black/60">{item.servicio}</h3>
                                 </div>
-                                <p className="text-base flex-1 whitespace-nowrap  text-ellipsis font-bold">S/ {precioLimpio}</p>
+                                <p className="text-base flex-1 whitespace-nowrap text-right  text-ellipsis font-bold">S/ {precioLimpio}</p>
                               </div>
                             </div>
                           )}
@@ -982,7 +1011,7 @@ export const FormPago = () => {
                       <div className="font-bold"></div>
                     </div>
                     {adicionales.map((itemProp: any) => {
-                      const item: any = adicionalesList.find((a: any) => a.name === itemProp?.nombre)
+                      const item: any = adicionalesList.find((a: any) => a.name == itemProp?.nombre)
                       if (!item) {
                         console.warn(`Adicional no encontrado en la lista válida: ${itemProp?.nombre}`)
                         return null
@@ -991,34 +1020,34 @@ export const FormPago = () => {
                         <div key={item.id} className="grid grid-cols-9 gap-4 items-center border-b border-b-gray-200 py-2 text-sm group">
                           <div className="flex items-center gap-2 col-span-2">
                             <button
-                              onClick={() => handleDecrementCantidad(item.id)}
+                              onClick={() => handleDecrementCantidad(itemProp.id)}
                               className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all "
                             >
                               -
                             </button>
-                            <span className="rounded-full  text-black flex items-center justify-center text-xs ">{item.cantidad}</span>
+                            <span className="rounded-full  text-black flex items-center justify-center text-xs ">{itemProp.cantidad}</span>
                             <button
-                              onClick={() => handleIncrementCantidad(item.id)}
+                              onClick={() => handleIncrementCantidad(itemProp.id)}
                               className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all "
                             >
                               +
                             </button>
                           </div>
-                          <div className="px-1 col-span-2">{item.nombre}</div>
+                          <div className="px-1 col-span-2">{item.name}</div>
                           <div className="col-span-2">
                             {item.cantidad_propuestas && (
                               <div className="flex items-center gap-2 ">
                                 <button
-                                  onClick={() => handleDecrement(item.id)}
+                                  onClick={() => handleDecrement(itemProp.id)}
                                   className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all "
                                 >
                                   -
                                 </button>
                                 <p>
-                                  <span className="text-center">{String(item.cantidad_propuestas).padStart(2, '0')}</span>
+                                  <span className="text-center">{String(itemProp.cantidad_propuestas).padStart(2, '0')}</span>
                                 </p>
                                 <button
-                                  onClick={() => handleIncrement(item.id)}
+                                  onClick={() => handleIncrement(itemProp.id)}
                                   className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all "
                                 >
                                   +
@@ -1028,9 +1057,9 @@ export const FormPago = () => {
                           </div>
                           <div className="col-span-2">
                             {(
-                              item.precio * item.cantidad +
+                              item.precio * itemProp.cantidad +
                               (item.precio_propuestas
-                                ? Number(item.precio_propuestas) * Math.max(0, Number(item.cantidad_propuestas) - 1) * item.cantidad
+                                ? Number(item.precio_propuestas) * Math.max(0, Number(itemProp.cantidad_propuestas) - 1) * itemProp.cantidad
                                 : 0)
                             ).toLocaleString('es-PE', {
                               style: 'currency',
@@ -1040,7 +1069,7 @@ export const FormPago = () => {
 
                           <div className="flex justify-center ">
                             <span
-                              onClick={() => removeAdicional(item.id)}
+                              onClick={() => removeAdicional(itemProp.id)}
                               className="rounded-full w-[20px] h-[20px] text-red-600 flex items-center justify-center text-xl hover:text-red-700 transition-all cursor-pointer hover:scale-110"
                             >
                               <TiDelete />
@@ -1187,6 +1216,18 @@ export const FormPago = () => {
                 </div>
               </div>
               <div className="flex flex-col lg:flex-row gap-3">
+                <div className="relative w-full h-fit">
+                  <input
+                    name="dni"
+                    type="text"
+                    value={values.dni}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="w-full h-full border border-gray-300 outline-gray-300 rounded-lg px-4 py-4 text-black"
+                    placeholder="DNI"
+                  />
+                  <Errors errors={errors.dni} touched={touched.dni} />
+                </div>
                 <div className="relative w-full h-fit">
                   <select
                     name="conFactura"
@@ -1351,14 +1392,14 @@ export const FormPago = () => {
                         <div key={item.id} className="grid grid-cols-9 gap-4 items-center border-b border-b-gray-200 py-2 text-sm group">
                           <div className="flex items-center gap-2 col-span-2">
                             <button
-                              onClick={() => handleDecrementCantidad(item.id)}
+                              onClick={() => handleDecrementCantidad(itemProp.id)}
                               className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all "
                             >
                               -
                             </button>
                             <span className="rounded-full  text-black flex items-center justify-center text-xs ">{itemProp.cantidad}</span>
                             <button
-                              onClick={() => handleIncrementCantidad(item.id)}
+                              onClick={() => handleIncrementCantidad(itemProp.id)}
                               className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all "
                             >
                               +
@@ -1369,7 +1410,7 @@ export const FormPago = () => {
                             {itemProp.cantidad_propuestas && (
                               <div className="flex items-center gap-2 ">
                                 <button
-                                  onClick={() => handleDecrement(item.id)}
+                                  onClick={() => handleDecrement(itemProp.id)}
                                   className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
                                 >
                                   -
@@ -1378,7 +1419,7 @@ export const FormPago = () => {
                                   <span className="text-center">{String(itemProp.cantidad_propuestas).padStart(2, '0')}</span>
                                 </p>
                                 <button
-                                  onClick={() => handleIncrement(item.id)}
+                                  onClick={() => handleIncrement(itemProp.id)}
                                   className="bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
                                 >
                                   +
@@ -1400,7 +1441,7 @@ export const FormPago = () => {
 
                           <div className="flex justify-center ">
                             <span
-                              onClick={() => removeAdicional(item.id)}
+                              onClick={() => removeAdicional(itemProp.id)}
                               className="rounded-full w-[20px] h-[20px] text-red-600 flex items-center justify-center text-xl hover:text-red-700 transition-all cursor-pointer hover:scale-110"
                             >
                               <TiDelete />
